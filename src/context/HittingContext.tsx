@@ -31,9 +31,34 @@ const demoOutings: Outing[] = [
     date: '2024-01-15',
     opponent: 'Eagles',
     atBats: [
-      { id: 'ab1', pitchCount: 5, result: 'single', locations: [], sprayPoint: { id: 'sp1', x: -0.3, y: 0.4, result: 'single', hitType: 'line_drive', exitVelocity: 98, isBarrel: true } },
-      { id: 'ab2', pitchCount: 3, result: 'strikeout', locations: [] },
-      { id: 'ab3', pitchCount: 6, result: 'double', locations: [], sprayPoint: { id: 'sp2', x: 0.6, y: 0.7, result: 'double', hitType: 'line_drive', exitVelocity: 105, isBarrel: true } },
+      { 
+        id: 'ab1', 
+        pitches: [
+          { id: 'p1', location: { x: 0.2, y: 0.3 }, outcome: 'strike_looking' },
+          { id: 'p2', location: { x: -0.1, y: 0.1 }, outcome: 'ball' },
+          { id: 'p3', location: { x: 0, y: 0 }, outcome: 'in_play_hit' },
+        ],
+        result: 'single', 
+        sprayPoint: { id: 'sp1', x: -0.3, y: 0.4, result: 'single', hitType: 'line_drive', exitVelocity: 98, isBarrel: true } 
+      },
+      { 
+        id: 'ab2', 
+        pitches: [
+          { id: 'p4', location: { x: 0.3, y: 0.2 }, outcome: 'strike_swinging' },
+          { id: 'p5', location: { x: 0, y: -0.3 }, outcome: 'strike_swinging' },
+          { id: 'p6', location: { x: 0.1, y: 0.4 }, outcome: 'strike_swinging' },
+        ],
+        result: 'strikeout' 
+      },
+      { 
+        id: 'ab3', 
+        pitches: [
+          { id: 'p7', location: { x: 0, y: 0.1 }, outcome: 'foul' },
+          { id: 'p8', location: { x: 0.2, y: 0 }, outcome: 'in_play_hit' },
+        ],
+        result: 'double', 
+        sprayPoint: { id: 'sp2', x: 0.6, y: 0.7, result: 'double', hitType: 'line_drive', exitVelocity: 105, isBarrel: true } 
+      },
     ],
     isComplete: true,
   },
@@ -43,8 +68,18 @@ const demoOutings: Outing[] = [
     type: 'batting_practice',
     date: '2024-01-14',
     atBats: [
-      { id: 'ab4', pitchCount: 1, result: 'hr', locations: [], sprayPoint: { id: 'sp3', x: 0.1, y: 0.95, result: 'hr', hitType: 'fly_ball', exitVelocity: 108, isBarrel: true } },
-      { id: 'ab5', pitchCount: 1, result: 'single', locations: [], sprayPoint: { id: 'sp4', x: -0.5, y: 0.35, result: 'single', hitType: 'ground_ball', exitVelocity: 92 } },
+      { 
+        id: 'ab4', 
+        pitches: [{ id: 'p9', location: { x: 0, y: 0 }, outcome: 'in_play_hit' }],
+        result: 'hr', 
+        sprayPoint: { id: 'sp3', x: 0.1, y: 0.95, result: 'hr', hitType: 'fly_ball', exitVelocity: 108, isBarrel: true } 
+      },
+      { 
+        id: 'ab5', 
+        pitches: [{ id: 'p10', location: { x: -0.2, y: 0.1 }, outcome: 'in_play_hit' }],
+        result: 'single', 
+        sprayPoint: { id: 'sp4', x: -0.5, y: 0.35, result: 'single', hitType: 'ground_ball', exitVelocity: 92 } 
+      },
     ],
     isComplete: true,
   },

@@ -4,6 +4,27 @@ export type HitResult = 'hit' | 'whiff' | 'foul' | 'ball';
 
 export type HitType = 'ground_ball' | 'line_drive' | 'fly_ball' | 'popup';
 
+export type PitchType = 'fastball' | 'curveball' | 'slider' | 'changeup' | 'cutter' | 'sinker' | 'splitter' | 'other';
+
+export type PitchOutcome = 
+  | 'ball' 
+  | 'strike_looking' 
+  | 'strike_swinging' 
+  | 'foul' 
+  | 'foul_tip'
+  | 'in_play_out' 
+  | 'in_play_hit';
+
+export interface Pitch {
+  id: string;
+  location: { x: number; y: number };
+  pitchType?: PitchType;
+  outcome: PitchOutcome;
+  sprayPoint?: SprayChartPoint;
+  exitVelocity?: number;
+  isBarrel?: boolean;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -34,10 +55,11 @@ export interface LocationPoint {
 
 export interface AtBat {
   id: string;
-  pitchCount: number;
+  pitches: Pitch[];
   result: 'strikeout' | 'walk' | 'hbp' | 'single' | 'double' | 'triple' | 'hr' | 'out';
-  locations: LocationPoint[];
   sprayPoint?: SprayChartPoint;
+  exitVelocity?: number;
+  isBarrel?: boolean;
   notes?: string;
 }
 
