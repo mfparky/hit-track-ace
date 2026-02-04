@@ -186,6 +186,7 @@ export default function OutingDetail() {
           <div className="space-y-2">
             {outing.atBats.map((ab, idx) => {
               const resultInfo = resultLabels[ab.result] || { label: ab.result, color: 'bg-muted' };
+              const pitchCount = ab.pitches?.length || 0;
               return (
                 <div
                   key={ab.id}
@@ -209,7 +210,7 @@ export default function OutingDetail() {
                     {ab.sprayPoint?.isBarrel && (
                       <span className="text-barrel font-semibold">🛢️</span>
                     )}
-                    <span>{ab.pitchCount} pitches</span>
+                    {pitchCount > 0 && <span>{pitchCount} pitches</span>}
                   </div>
                 </div>
               );

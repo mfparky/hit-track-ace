@@ -74,9 +74,8 @@ export default function LogOuting() {
 
     const newAB: AtBat = {
       id: Date.now().toString(),
-      pitchCount: currentAB.pitchCount || 1,
+      pitches: [], // Empty for logged outings
       result: currentAB.result as AtBat['result'],
-      locations: [],
       sprayPoint: isBallInPlay && currentAB.sprayPoint ? {
         id: Date.now().toString(),
         x: currentAB.sprayPoint.x,
@@ -86,6 +85,8 @@ export default function LogOuting() {
         exitVelocity: currentAB.exitVelo ? Number(currentAB.exitVelo) : undefined,
         isBarrel: currentAB.isBarrel,
       } : undefined,
+      exitVelocity: currentAB.exitVelo ? Number(currentAB.exitVelo) : undefined,
+      isBarrel: currentAB.isBarrel,
     };
 
     setAtBats([...atBats, newAB]);
@@ -192,19 +193,6 @@ export default function LogOuting() {
           </div>
         )}
 
-        {/* Pitch Count */}
-        <div>
-          <Label htmlFor="pitchCount" className="text-xs">Pitch Count</Label>
-          <Input
-            id="pitchCount"
-            type="number"
-            placeholder="e.g., 5"
-            value={currentAB.pitchCount || ''}
-            onChange={(e) => setCurrentAB({ ...currentAB, pitchCount: Number(e.target.value) })}
-            className="mt-1"
-          />
-        </div>
-
         {/* Exit Velo Toggle */}
         {isBallInPlay && (
           <>
@@ -263,7 +251,7 @@ export default function LogOuting() {
           <div className="border-t border-border pt-4">
             <Label className="text-xs mb-2 block">Logged At-Bats ({atBats.length})</Label>
             <div className="flex flex-wrap gap-2">
-              {atBats.map((ab, idx) => (
+              {atBats.map((ab) => (
                 <span
                   key={ab.id}
                   className={cn(
