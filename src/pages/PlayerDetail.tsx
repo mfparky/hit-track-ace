@@ -5,9 +5,10 @@ import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
 import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
+import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
 import { Target, Zap, TrendingUp, Activity, Trash2, Edit, User } from 'lucide-react';
-import { SprayChartPoint } from '@/types/hitting';
+import { SprayChartPoint, Pitch } from '@/types/hitting';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,11 @@ export default function PlayerDetail() {
 
   const allSprayPoints: SprayChartPoint[] = playerOutings.flatMap(o => 
     o.atBats.map(ab => ab.sprayPoint).filter((sp): sp is SprayChartPoint => !!sp)
+  );
+
+  // Collect all pitches for heat map
+  const allPitches: Pitch[] = playerOutings.flatMap(o => 
+    o.atBats.flatMap(ab => ab.pitches || [])
   );
 
   const totalABs = playerOutings.reduce((acc, o) => 
@@ -139,6 +145,21 @@ export default function PlayerDetail() {
               <span className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-spray-out" /> Out
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Zone Heat Map */}
+        {allPitches.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Zone Heat Map</h3>
+            <div className="bg-card border border-border rounded-xl p-4">
+              <div className="flex justify-center">
+                <ZoneHeatMap pitches={allPitches} size="lg" />
+              </div>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                Hit rate by zone • Green outline = strike zone
+              </p>
             </div>
           </div>
         )}
