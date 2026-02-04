@@ -24,10 +24,8 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
 
   const { width, height } = dimensions[size];
   
-  // Zone extends beyond strike zone (like the reference image)
-  // x: -1.5 to 1.5 (wider than strike zone -1 to 1)
-  // y: -1.5 to 1.5 (taller than strike zone -1 to 1)
-  const zoneRange = { minX: -1.5, maxX: 1.5, minY: -1.5, maxY: 1.5 };
+  // 5x5 grid where inner 3x3 is the strike zone
+  // Outer cells represent off-plate areas
   const cellWidth = width / GRID_COLS;
   const cellHeight = height / GRID_ROWS;
 
@@ -39,9 +37,14 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
     pitches.forEach(pitch => {
       const { x, y } = pitch.location;
       
-      // Map x,y to grid position
-      const colIndex = Math.floor(((x - zoneRange.minX) / (zoneRange.maxX - zoneRange.minX)) * GRID_COLS);
-      const rowIndex = Math.floor(((zoneRange.maxY - y) / (zoneRange.maxY - zoneRange.minY)) * GRID_ROWS);
+      // Map coordinates to 5x5 grid
+      // x: -1.5 to 1.5 maps to columns 0-4
+      // y: 1.5 to -1.5 maps to rows 0-4 (inverted because y increases upward)
+      const normalizedX = (x + 1.5) / 3; // 0 to 1
+      const normalizedY = (1.5 - y) / 3; // 0 to 1 (inverted)
+      
+      const colIndex = Math.floor(normalizedX * GRID_COLS);
+      const rowIndex = Math.floor(normalizedY * GRID_ROWS);
       
       // Clamp to valid indices
       const col = Math.max(0, Math.min(GRID_COLS - 1, colIndex));
@@ -68,33 +71,38 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
   const getZoneColor = (hitRate: number, total: number): string => {
     if (total === 0) return 'hsl(var(--muted) / 0.3)'; // No data
     
-    // Color gradient from blue (cold/0%) to white (50%) to red (hot/100%)
+    // Color gradient from light blue (cold/0%) to white (50%) to red (hot/100%)
     if (hitRate <= 0.5) {
-      // Blue to white (cold to neutral)
+      // Light blue to white (cold to neutral)
       const intensity = hitRate * 2; // 0 to 1
-      const hue = 220; // Blue
-      const saturation = 70 - (intensity * 50); // 70% to 20%
-      const lightness = 30 + (intensity * 40); // 30% to 70%
+      const hue = 200; // Light blue
+      const saturation = 80 - (intensity * 60); // 80% to 20%
+      const lightness = 55 + (intensity * 35); // 55% to 90%
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     } else {
       // White to red (neutral to hot)
       const intensity = (hitRate - 0.5) * 2; // 0 to 1
       const hue = 0; // Red
-      const saturation = 20 + (intensity * 50); // 20% to 70%
-      const lightness = 70 - (intensity * 30); // 70% to 40%
+      const saturation = 20 + (intensity * 60); // 20% to 80%
+      const lightness = 90 - (intensity * 45); // 90% to 45%
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
   };
 
-  const strikeZoneMargin = {
-    left: ((1 + zoneRange.minX) / (zoneRange.maxX - zoneRange.minX)) * width,
-    right: ((zoneRange.maxX - 1) / (zoneRange.maxX - zoneRange.minX)) * width,
-    top: ((zoneRange.maxY - 1) / (zoneRange.maxY - zoneRange.minY)) * height,
-    bottom: ((1 + zoneRange.minY) / (zoneRange.maxY - zoneRange.minY)) * height,
+  const getTextColor = (hitRate: number, total: number): string => {
+    if (total === 0) return 'hsl(var(--muted-foreground))';
+    // Dark text for light backgrounds, white for dark backgrounds
+    if (hitRate < 0.3 || hitRate > 0.7) {
+      return 'white';
+    }
+    return 'hsl(222, 47%, 15%)'; // Dark navy for middle tones
   };
 
-  const strikeZoneWidth = width - strikeZoneMargin.left - strikeZoneMargin.right;
-  const strikeZoneHeight = height - strikeZoneMargin.top - strikeZoneMargin.bottom;
+  // Strike zone is the inner 3x3 grid (columns 1-3, rows 1-3)
+  const strikeZoneX = cellWidth;
+  const strikeZoneY = cellHeight;
+  const strikeZoneWidth = cellWidth * 3;
+  const strikeZoneHeight = cellHeight * 3;
 
   return (
     <div className="flex flex-col items-center">
@@ -124,10 +132,11 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
                   y={rowIndex * cellHeight + cellHeight / 2}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="fill-foreground font-semibold"
+                  fill={getTextColor(cell.hitRate, cell.total)}
+                  fontWeight="700"
                   style={{ 
                     fontSize: size === 'lg' ? 14 : size === 'md' ? 12 : 10,
-                    opacity: 0.9
+                    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                   }}
                 >
                   {Math.round(cell.hitRate * 100)}%
@@ -140,10 +149,11 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
                   y={rowIndex * cellHeight + cellHeight / 2 + (size === 'lg' ? 16 : 12)}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="fill-muted-foreground"
+                  fill={getTextColor(cell.hitRate, cell.total)}
                   style={{ 
                     fontSize: size === 'lg' ? 10 : 8,
-                    opacity: 0.7
+                    opacity: 0.85,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.2)'
                   }}
                 >
                   ({cell.total})
@@ -153,29 +163,29 @@ export function ZoneHeatMap({ pitches, size = 'md' }: ZoneHeatMapProps) {
           ))
         )}
 
-        {/* Strike zone outline */}
+        {/* Strike zone outline - inner 3x3 grid */}
         <rect
-          x={strikeZoneMargin.left}
-          y={strikeZoneMargin.top}
+          x={strikeZoneX}
+          y={strikeZoneY}
           width={strikeZoneWidth}
           height={strikeZoneHeight}
           fill="none"
-          stroke="hsl(var(--success))"
-          strokeWidth={2}
+          stroke="hsl(var(--foreground))"
+          strokeWidth={2.5}
         />
       </svg>
 
       {/* Legend */}
       <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'hsl(220, 70%, 30%)' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'hsl(200, 80%, 55%)' }} />
           <span>Cold</span>
         </div>
         <div className="w-16 h-3 rounded" style={{
-          background: 'linear-gradient(to right, hsl(220, 70%, 30%), hsl(0, 0%, 70%), hsl(0, 70%, 40%))'
+          background: 'linear-gradient(to right, hsl(200, 80%, 55%), hsl(0, 0%, 90%), hsl(0, 80%, 45%))'
         }} />
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'hsl(0, 70%, 40%)' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'hsl(0, 80%, 45%)' }} />
           <span>Hot</span>
         </div>
       </div>
