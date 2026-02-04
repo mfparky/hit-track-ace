@@ -77,6 +77,9 @@ export default function LiveOuting() {
     );
   }
 
+  // Only track count for games and live ABs
+  const tracksCount = outing.type === 'game' || outing.type === 'live_abs';
+
   // Count balls and strikes in current AB
   const balls = currentABPitches.filter(p => p.outcome === 'ball').length;
   const strikes = currentABPitches.filter(p => 
@@ -114,16 +117,19 @@ export default function LiveOuting() {
       ['strike_looking', 'strike_swinging'].includes(p.outcome)
     ).length;
 
-    // Walk
-    if (newBalls >= 4) {
-      finishAtBat(updatedPitches, 'walk');
-      return;
-    }
+    // Auto-end at-bats only for count-tracking outing types
+    if (tracksCount) {
+      // Walk
+      if (newBalls >= 4) {
+        finishAtBat(updatedPitches, 'walk');
+        return;
+      }
 
-    // Strikeout (need 3 actual strikes, not fouls)
-    if (newStrikes >= 3) {
-      finishAtBat(updatedPitches, 'strikeout');
-      return;
+      // Strikeout (need 3 actual strikes, not fouls)
+      if (newStrikes >= 3) {
+        finishAtBat(updatedPitches, 'strikeout');
+        return;
+      }
     }
 
     // In play - need spray chart
@@ -254,18 +260,27 @@ export default function LiveOuting() {
       />
 
       <div className="px-4 py-4 max-w-lg mx-auto">
-        {/* Count Display */}
-        <div className="flex items-center justify-center gap-8 py-4 mb-4 bg-card rounded-xl border border-border">
-          <div className="text-center">
-            <p className="text-4xl font-bold font-mono">{balls}-{displayStrikes}</p>
-            <p className="text-xs text-muted-foreground mt-1">Count</p>
+        {/* Count Display - only show for games and live ABs */}
+        {tracksCount ? (
+          <div className="flex items-center justify-center gap-8 py-4 mb-4 bg-card rounded-xl border border-border">
+            <div className="text-center">
+              <p className="text-4xl font-bold font-mono">{balls}-{displayStrikes}</p>
+              <p className="text-xs text-muted-foreground mt-1">Count</p>
+            </div>
+            <div className="h-12 w-px bg-border" />
+            <div className="text-center">
+              <p className="text-4xl font-bold font-mono text-accent">{currentABPitches.length + (step !== 'location' ? 1 : 0)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Pitches</p>
+            </div>
           </div>
-          <div className="h-12 w-px bg-border" />
-          <div className="text-center">
-            <p className="text-4xl font-bold font-mono text-accent">{currentABPitches.length + (step !== 'location' ? 1 : 0)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Pitches</p>
+        ) : (
+          <div className="flex items-center justify-center py-4 mb-4 bg-card rounded-xl border border-border">
+            <div className="text-center">
+              <p className="text-4xl font-bold font-mono text-accent">{currentABPitches.length + (step !== 'location' ? 1 : 0)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Swings</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Step Indicator */}
         <div className="text-center mb-4">
