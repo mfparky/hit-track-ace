@@ -28,7 +28,7 @@ export function StatCard({ label, value, icon: Icon, trend, highlight = false, s
       className={cn(
         'rounded-lg bg-card border border-border shadow-sm transition-all hover:shadow-md',
         sizes[size],
-        highlight && 'border-accent bg-accent/5'
+        highlight && 'border-accent ring-1 ring-accent/20'
       )}
     >
       <div className="flex items-start justify-between">
@@ -41,7 +41,7 @@ export function StatCard({ label, value, icon: Icon, trend, highlight = false, s
         {Icon && (
           <div className={cn(
             'p-2 rounded-lg',
-            highlight ? 'bg-accent/10 text-accent' : 'bg-muted text-muted-foreground'
+            highlight ? 'bg-accent/15 text-accent' : 'bg-primary/10 text-primary'
           )}>
             <Icon className="w-5 h-5" />
           </div>
