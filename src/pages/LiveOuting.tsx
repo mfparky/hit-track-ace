@@ -25,14 +25,22 @@ const pitchTypes: { value: PitchType; label: string; abbr: string }[] = [
   { value: 'other', label: 'Other', abbr: '?' },
 ];
 
-const outcomes: { value: PitchOutcome; label: string; color: string; endsAB?: AtBat['result'] }[] = [
-  { value: 'ball', label: 'Ball', color: 'bg-ball' },
-  { value: 'strike_looking', label: 'Strike Looking', color: 'bg-warning' },
-  { value: 'strike_swinging', label: 'Strike Swinging', color: 'bg-destructive' },
-  { value: 'foul', label: 'Foul', color: 'bg-foul' },
-  { value: 'foul_tip', label: 'Foul Tip', color: 'bg-foul' },
-  { value: 'in_play_out', label: 'In Play - Out', color: 'bg-spray-out' },
-  { value: 'in_play_hit', label: 'In Play - Hit', color: 'bg-spray-single' },
+const gameOutcomes: { value: PitchOutcome; label: string; abbr: string; color: string }[] = [
+  { value: 'ball', label: 'Ball', abbr: 'Ball', color: 'bg-gradient-to-br from-emerald-500 to-emerald-600' },
+  { value: 'strike_looking', label: 'Strike Looking', abbr: 'K Look', color: 'bg-gradient-to-br from-amber-500 to-orange-500' },
+  { value: 'strike_swinging', label: 'Strike Swinging', abbr: 'K Swing', color: 'bg-gradient-to-br from-rose-500 to-red-600' },
+  { value: 'foul', label: 'Foul', abbr: 'Foul', color: 'bg-gradient-to-br from-slate-500 to-slate-600' },
+  { value: 'foul_tip', label: 'Foul Tip', abbr: 'Foul Tip', color: 'bg-gradient-to-br from-slate-400 to-slate-500' },
+  { value: 'in_play_out', label: 'In Play - Out', abbr: 'Out', color: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+  { value: 'in_play_hit', label: 'In Play - Hit', abbr: 'Hit', color: 'bg-gradient-to-br from-sky-500 to-blue-600' },
+];
+
+type BPOutcome = 'whiff' | 'hit' | 'barrel' | 'foul';
+const bpOutcomes: { value: BPOutcome; label: string; color: string }[] = [
+  { value: 'whiff', label: 'Whiff', color: 'bg-gradient-to-br from-rose-500 to-red-600' },
+  { value: 'foul', label: 'Foul', color: 'bg-gradient-to-br from-slate-500 to-slate-600' },
+  { value: 'hit', label: 'Hit', color: 'bg-gradient-to-br from-sky-500 to-blue-600' },
+  { value: 'barrel', label: 'Barrel 🛢️', color: 'bg-gradient-to-br from-amber-400 to-orange-500' },
 ];
 
 const hitTypes: { value: HitType; label: string }[] = [
@@ -77,8 +85,9 @@ export default function LiveOuting() {
     );
   }
 
-  // Only track count for games and live ABs
+  // Outing type checks
   const tracksCount = outing.type === 'game' || outing.type === 'live_abs';
+  const isBP = outing.type === 'batting_practice' || outing.type === 'cage_session';
 
   // Count balls and strikes in current AB
   const balls = currentABPitches.filter(p => p.outcome === 'ball').length;
@@ -143,6 +152,39 @@ export default function LiveOuting() {
     // Continue AB
     setCurrentABPitches(updatedPitches);
     resetForNextPitch();
+  };
+
+  const handleBPOutcome = (outcome: BPOutcome) => {
+    const pitchOutcome: PitchOutcome = outcome === 'whiff' ? 'strike_swinging' : 
+                                        outcome === 'foul' ? 'foul' : 'in_play_hit';
+    
+    const pitch: Pitch = {
+      id: Date.now().toString(),
+      location: currentPitch.location || { x: 0, y: 0 },
+      pitchType: currentPitch.pitchType,
+      outcome: pitchOutcome,
+      isBarrel: outcome === 'barrel',
+    };
+
+    if (outcome === 'hit' || outcome === 'barrel') {
+      setCurrentABPitches([pitch]);
+      setHitResult('single');
+      setIsBarrel(outcome === 'barrel');
+      setStep('spray');
+    } else {
+      // Whiff or foul - just log it and reset for next swing
+      const updatedOuting = {
+        ...outing,
+        atBats: [...outing.atBats, {
+          id: Date.now().toString(),
+          pitches: [pitch],
+          result: outcome === 'whiff' ? 'strikeout' : 'out',
+          isBarrel: false,
+        } as AtBat],
+      };
+      updateOuting(updatedOuting);
+      resetForNextPitch();
+    }
   };
 
   const handleSprayClick = (x: number, y: number) => {
@@ -353,18 +395,37 @@ export default function LiveOuting() {
 
           {step === 'outcome' && (
             <div className="space-y-3">
-              {outcomes.map((outcome) => (
-                <button
-                  key={outcome.value}
-                  onClick={() => handleOutcome(outcome.value)}
-                  className={cn(
-                    'w-full py-4 rounded-lg font-bold text-white transition-all active:scale-[0.98]',
-                    outcome.color
-                  )}
-                >
-                  {outcome.label}
-                </button>
-              ))}
+              {isBP ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {bpOutcomes.map((outcome) => (
+                    <button
+                      key={outcome.value}
+                      onClick={() => handleBPOutcome(outcome.value)}
+                      className={cn(
+                        'py-6 rounded-xl font-bold text-white transition-all active:scale-[0.97] shadow-lg',
+                        outcome.color
+                      )}
+                    >
+                      {outcome.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {gameOutcomes.map((outcome) => (
+                    <button
+                      key={outcome.value}
+                      onClick={() => handleOutcome(outcome.value)}
+                      className={cn(
+                        'py-3 rounded-xl font-bold text-white transition-all active:scale-[0.97] shadow-md text-sm',
+                        outcome.color
+                      )}
+                    >
+                      {outcome.abbr}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
