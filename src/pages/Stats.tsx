@@ -39,9 +39,6 @@ export default function Stats() {
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
   
-  const hardHitPct = allSprayPoints.length > 0
-    ? (allSprayPoints.filter(sp => (sp.exitVelocity || 0) >= 95).length / allSprayPoints.length) * 100
-    : 0;
 
   const sortedOutings = [...outings].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -92,8 +89,8 @@ export default function Stats() {
                 iconColor="text-yellow-500"
               />
               <StatCard
-                label="Hard Hit %"
-                value={`${hardHitPct.toFixed(1)}%`}
+                label="Total Hits"
+                value={totalHits}
                 icon={TrendingUp}
                 iconColor="text-green-500"
               />
