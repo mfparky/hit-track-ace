@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { SprayChart } from '@/components/hitting/SprayChart';
+import { LocationChart } from '@/components/hitting/LocationChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { AtBat, SprayChartPoint, HitType } from '@/types/hitting';
+import { AtBat, SprayChartPoint, HitType, Pitch, PitchOutcome } from '@/types/hitting';
 import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +43,7 @@ export default function LogOuting() {
     result: AtBat['result'] | '';
     pitchCount: number;
     sprayPoint: { x: number; y: number } | null;
+    pitchLocation: { x: number; y: number } | null;
     hitType: HitType;
     exitVelo: string;
     isBarrel: boolean;
@@ -49,11 +51,13 @@ export default function LogOuting() {
     result: '',
     pitchCount: 0,
     sprayPoint: null,
+    pitchLocation: null,
     hitType: 'line_drive',
     exitVelo: '',
     isBarrel: false,
   });
   const [showExitVelo, setShowExitVelo] = useState(false);
+  const [showPitchLocation, setShowPitchLocation] = useState(true);
 
   if (!outing || !player) {
     return (
@@ -67,14 +71,34 @@ export default function LogOuting() {
     setCurrentAB({ ...currentAB, sprayPoint: { x, y } });
   };
 
+  const handlePitchLocationClick = (x: number, y: number) => {
+    setCurrentAB({ ...currentAB, pitchLocation: { x, y } });
+  };
+
   const handleAddAB = () => {
     if (!currentAB.result) return;
 
     const isBallInPlay = ['single', 'double', 'triple', 'hr', 'out'].includes(currentAB.result);
 
+    // Create pitch with location if provided
+    const pitches: Pitch[] = [];
+    if (showPitchLocation && currentAB.pitchLocation) {
+      // Determine outcome based on result
+      let outcome: PitchOutcome = 'in_play_hit';
+      if (currentAB.result === 'strikeout') outcome = 'strike_swinging';
+      else if (currentAB.result === 'walk') outcome = 'ball';
+      else if (currentAB.result === 'out') outcome = 'in_play_out';
+
+      pitches.push({
+        id: Date.now().toString(),
+        location: currentAB.pitchLocation,
+        outcome,
+      });
+    }
+
     const newAB: AtBat = {
       id: Date.now().toString(),
-      pitches: [], // Empty for logged outings
+      pitches,
       result: currentAB.result as AtBat['result'],
       sprayPoint: isBallInPlay && currentAB.sprayPoint ? {
         id: Date.now().toString(),
@@ -94,6 +118,7 @@ export default function LogOuting() {
       result: '',
       pitchCount: 0,
       sprayPoint: null,
+      pitchLocation: null,
       hitType: 'line_drive',
       exitVelo: '',
       isBarrel: false,
@@ -145,6 +170,38 @@ export default function LogOuting() {
             size="md"
           />
         </div>
+
+        {/* Pitch Location Toggle & Chart */}
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showPitchLocation">Track Pitch Location</Label>
+          <Switch
+            id="showPitchLocation"
+            checked={showPitchLocation}
+            onCheckedChange={setShowPitchLocation}
+          />
+        </div>
+
+        {showPitchLocation && (
+          <div className="flex flex-col items-center animate-fade-in">
+            <Label className="text-xs mb-2 block text-center">Tap where the pitch was located</Label>
+            <LocationChart
+              points={currentAB.pitchLocation ? [{
+                id: 'preview',
+                x: currentAB.pitchLocation.x,
+                y: currentAB.pitchLocation.y,
+                result: 'hit',
+              }] : []}
+              onAddPoint={handlePitchLocationClick}
+              interactive
+              size="md"
+            />
+            {currentAB.pitchLocation && (
+              <p className="text-xs text-muted-foreground mt-2">
+                ✓ Location set
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Result Selection */}
         <div>
