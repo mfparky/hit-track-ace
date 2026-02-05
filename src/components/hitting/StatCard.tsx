@@ -5,12 +5,12 @@ interface StatCardProps {
   label: string;
   value: string | number;
   icon?: LucideIcon;
+  iconColor?: string;
   trend?: 'up' | 'down' | 'neutral';
-  highlight?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function StatCard({ label, value, icon: Icon, trend, highlight = false, size = 'md' }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, iconColor = 'text-primary', trend, size = 'md' }: StatCardProps) {
   const sizes = {
     sm: 'p-3',
     md: 'p-4',
@@ -27,22 +27,18 @@ export function StatCard({ label, value, icon: Icon, trend, highlight = false, s
     <div
       className={cn(
         'rounded-lg bg-card border border-border shadow-sm transition-all hover:shadow-md',
-        sizes[size],
-        highlight && 'border-accent ring-1 ring-accent/20'
+        sizes[size]
       )}
     >
       <div className="flex items-start justify-between">
         <div>
           <p className="stat-label mb-1">{label}</p>
-          <p className={cn('stat-value', valueSizes[size], highlight && 'text-accent')}>
+          <p className={cn('stat-value', valueSizes[size])}>
             {value}
           </p>
         </div>
         {Icon && (
-          <div className={cn(
-            'p-2 rounded-lg',
-            highlight ? 'bg-accent/15 text-accent' : 'bg-primary/10 text-primary'
-          )}>
+          <div className={cn('p-2 rounded-lg bg-muted', iconColor)}>
             <Icon className="w-5 h-5" />
           </div>
         )}

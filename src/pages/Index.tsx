@@ -74,22 +74,25 @@ const Index = () => {
             label="Barrel %"
             value={`${barrelPct.toFixed(1)}%`}
             icon={Target}
-            highlight={barrelPct > 10}
+            iconColor="text-accent"
           />
           <StatCard
             label="Avg Exit Velo"
             value={avgExitVelo > 0 ? `${avgExitVelo.toFixed(1)}` : '--'}
             icon={Zap}
+            iconColor="text-yellow-500"
           />
           <StatCard
             label="Hard Hit %"
             value={`${((allSprayPoints.filter(sp => (sp.exitVelocity || 0) >= 95).length / (allSprayPoints.length || 1)) * 100).toFixed(1)}%`}
             icon={TrendingUp}
+            iconColor="text-green-500"
           />
           <StatCard
             label="Total Outings"
             value={outings.length}
             icon={Activity}
+            iconColor="text-blue-500"
           />
         </div>
       </div>

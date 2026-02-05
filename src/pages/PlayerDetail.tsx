@@ -7,7 +7,7 @@ import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
-import { Target, Zap, TrendingUp, Activity, Trash2, Edit, User } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity, Trash2, User } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
 import {
   AlertDialog,
@@ -170,25 +170,28 @@ export default function PlayerDetail() {
             label="Barrel %"
             value={`${barrelPct.toFixed(1)}%`}
             icon={Target}
-            highlight={barrelPct > 10}
+            iconColor="text-accent"
             size="sm"
           />
           <StatCard
             label="Avg Exit Velo"
             value={avgExitVelo > 0 ? `${avgExitVelo.toFixed(1)}` : '--'}
             icon={Zap}
+            iconColor="text-yellow-500"
             size="sm"
           />
           <StatCard
             label="Hits"
             value={totalHits}
             icon={TrendingUp}
+            iconColor="text-green-500"
             size="sm"
           />
           <StatCard
             label="At Bats"
             value={totalABs}
             icon={Activity}
+            iconColor="text-blue-500"
             size="sm"
           />
         </div>
