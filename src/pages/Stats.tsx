@@ -77,33 +77,37 @@ export default function Stats() {
                 label="Home Runs"
                 value={homeRuns}
                 icon={Award}
-                highlight={homeRuns > 0}
+                iconColor="text-purple-500"
               />
               <StatCard
                 label="Barrel %"
                 value={`${barrelPct.toFixed(1)}%`}
                 icon={Target}
-                highlight={barrelPct > 10}
+                iconColor="text-accent"
               />
               <StatCard
                 label="Avg Exit Velo"
                 value={avgExitVelo > 0 ? `${avgExitVelo.toFixed(1)}` : '--'}
                 icon={Zap}
+                iconColor="text-yellow-500"
               />
               <StatCard
                 label="Hard Hit %"
                 value={`${hardHitPct.toFixed(1)}%`}
                 icon={TrendingUp}
+                iconColor="text-green-500"
               />
               <StatCard
                 label="Total Outings"
                 value={outings.length}
                 icon={Activity}
+                iconColor="text-blue-500"
               />
               <StatCard
                 label="Players"
                 value={players.length}
                 icon={BarChart3}
+                iconColor="text-pink-500"
               />
             </div>
           </TabsContent>

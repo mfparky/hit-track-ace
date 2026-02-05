@@ -164,19 +164,21 @@ export default function OutingDetail() {
             value={`${barrelPct.toFixed(0)}%`}
             icon={Target}
             size="sm"
-            highlight={barrelPct > 10}
+            iconColor="text-accent"
           />
           <StatCard
             label="Exit Velo"
             value={avgExitVelo > 0 ? avgExitVelo.toFixed(0) : '--'}
             icon={Zap}
             size="sm"
+            iconColor="text-yellow-500"
           />
           <StatCard
             label="Hard Hit"
             value={`${((sprayPoints.filter(sp => (sp.exitVelocity || 0) >= 95).length / (sprayPoints.length || 1)) * 100).toFixed(0)}%`}
             icon={TrendingUp}
             size="sm"
+            iconColor="text-green-500"
           />
         </div>
 
