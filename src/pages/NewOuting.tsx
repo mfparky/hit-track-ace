@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Outing, OutingType } from '@/types/hitting';
-import { Zap, ClipboardList } from 'lucide-react';
+import { Zap, ClipboardList, Loader2 } from 'lucide-react';
 
 const outingTypes: { value: OutingType; label: string; description: string }[] = [
   { value: 'game', label: 'Game', description: 'Competitive game at-bats' },
@@ -20,7 +21,8 @@ const outingTypes: { value: OutingType; label: string; description: string }[] =
 
 export default function NewOuting() {
   const navigate = useNavigate();
-  const { players, addOuting } = useHitting();
+  const { addOuting } = useHitting();
+  const { players, isLoading } = usePlayers();
   const [step, setStep] = useState(1);
   const [outingData, setOutingData] = useState({
     playerId: '',
@@ -76,17 +78,27 @@ export default function NewOuting() {
                 onValueChange={(value) => setOutingData({ ...outingData, playerId: value })}
               >
                 <SelectTrigger className="h-14">
-                  <SelectValue placeholder="Choose a player..." />
+                  <SelectValue placeholder={isLoading ? "Loading players..." : "Choose a player..."} />
                 </SelectTrigger>
                 <SelectContent>
-                  {players.map((player) => (
-                    <SelectItem key={player.id} value={player.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="font-mono text-accent">#{player.number}</span>
-                        <span>{player.name}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : players.length === 0 ? (
+                    <div className="py-4 text-center text-muted-foreground text-sm">
+                      No players yet. Add players in the Roster first.
+                    </div>
+                  ) : (
+                    players.map((player) => (
+                      <SelectItem key={player.id} value={player.id}>
+                        <span className="flex items-center gap-2">
+                          <span className="font-mono text-accent">#{player.number}</span>
+                          <span>{player.name}</span>
+                        </span>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
