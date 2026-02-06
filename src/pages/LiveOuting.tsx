@@ -110,7 +110,8 @@ export default function LiveOuting() {
 
   const handleLocationClick = (x: number, y: number) => {
     setCurrentPitch({ ...currentPitch, location: { x, y } });
-    setStep('pitch_type');
+    // Skip pitch type for BP/cage sessions
+    setStep(isBP ? 'outcome' : 'pitch_type');
   };
 
   const handlePitchType = (type: PitchType | 'skip') => {
@@ -277,7 +278,13 @@ export default function LiveOuting() {
       setCurrentPitch({});
       setStep('location');
     } else if (step === 'outcome') {
-      setStep('pitch_type');
+      // For BP, go back to location; otherwise go back to pitch_type
+      if (isBP) {
+        setCurrentPitch({});
+        setStep('location');
+      } else {
+        setStep('pitch_type');
+      }
     } else if (step === 'spray') {
       // Remove the last pitch and go back
       setCurrentABPitches(prev => prev.slice(0, -1));
