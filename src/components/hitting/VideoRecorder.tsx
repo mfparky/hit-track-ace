@@ -14,9 +14,11 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const mimeTypeRef = useRef<string>('video/mp4');
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(0.25);
   const [cameraReady, setCameraReady] = useState(false);
@@ -67,13 +69,32 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
 
     chunksRef.current = [];
     
-    const options = { mimeType: 'video/webm;codecs=vp9' };
-    let mediaRecorder: MediaRecorder;
+    // Try MP4 first (iOS/Safari), then WebM (Chrome/Firefox)
+    const mimeTypes = [
+      'video/mp4',
+      'video/mp4;codecs=avc1',
+      'video/webm;codecs=h264',
+      'video/webm;codecs=vp9',
+      'video/webm',
+    ];
     
+    let selectedMimeType = '';
+    for (const mimeType of mimeTypes) {
+      if (MediaRecorder.isTypeSupported(mimeType)) {
+        selectedMimeType = mimeType;
+        break;
+      }
+    }
+    
+    mimeTypeRef.current = selectedMimeType || 'video/mp4';
+    
+    let mediaRecorder: MediaRecorder;
     try {
-      mediaRecorder = new MediaRecorder(streamRef.current, options);
+      mediaRecorder = new MediaRecorder(streamRef.current, { 
+        mimeType: selectedMimeType || undefined 
+      });
     } catch {
-      // Fallback for iOS/Safari
+      // Final fallback
       mediaRecorder = new MediaRecorder(streamRef.current);
     }
 
@@ -86,13 +107,14 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
     };
 
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
       const url = URL.createObjectURL(blob);
+      setRecordedBlob(blob);
       setRecordedVideoUrl(url);
       onRecordingComplete?.(url);
     };
 
-    mediaRecorder.start(100); // Collect data every 100ms
+    mediaRecorder.start(100);
     setIsRecording(true);
   }, [onRecordingComplete]);
 
@@ -122,12 +144,15 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
   }, []);
 
   const handleShare = useCallback(async () => {
-    if (!recordedVideoUrl) return;
+    if (!recordedBlob) return;
+
+    // Determine file extension based on mime type
+    const isMP4 = mimeTypeRef.current.includes('mp4');
+    const extension = isMP4 ? 'mp4' : 'webm';
+    const filename = `swing-${Date.now()}.${extension}`;
 
     try {
-      const response = await fetch(recordedVideoUrl);
-      const blob = await response.blob();
-      const file = new File([blob], `swing-${Date.now()}.webm`, { type: 'video/webm' });
+      const file = new File([recordedBlob], filename, { type: mimeTypeRef.current });
 
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -136,26 +161,31 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
         });
       } else {
         // Fallback: download the file
+        const url = URL.createObjectURL(recordedBlob);
         const a = document.createElement('a');
-        a.href = recordedVideoUrl;
-        a.download = `swing-${Date.now()}.webm`;
+        a.href = url;
+        a.download = filename;
         a.click();
+        URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error('Share error:', err);
       // Fallback to download
+      const url = URL.createObjectURL(recordedBlob);
       const a = document.createElement('a');
-      a.href = recordedVideoUrl;
-      a.download = `swing-${Date.now()}.webm`;
+      a.href = url;
+      a.download = filename;
       a.click();
+      URL.revokeObjectURL(url);
     }
-  }, [recordedVideoUrl]);
+  }, [recordedBlob]);
 
   const handleRetake = useCallback(() => {
     if (recordedVideoUrl) {
       URL.revokeObjectURL(recordedVideoUrl);
     }
     setRecordedVideoUrl(null);
+    setRecordedBlob(null);
     setIsPlaying(false);
   }, [recordedVideoUrl]);
 
