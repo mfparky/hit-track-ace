@@ -29,7 +29,6 @@ export interface Player {
   id: string;
   name: string;
   number: string;
-  position: string;
   bats: 'L' | 'R' | 'S';
   avatar?: string;
 }

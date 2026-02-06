@@ -17,10 +17,10 @@ const HittingContext = createContext<HittingContextType | undefined>(undefined);
 
 // Demo data
 const demoPlayers: Player[] = [
-  { id: '1', name: 'Marcus Johnson', number: '24', position: 'CF', bats: 'R' },
-  { id: '2', name: 'Tyler Rodriguez', number: '7', position: '3B', bats: 'L' },
-  { id: '3', name: 'Jake Williams', number: '12', position: 'SS', bats: 'S' },
-  { id: '4', name: 'Chris Thompson', number: '33', position: '1B', bats: 'R' },
+  { id: '1', name: 'Marcus Johnson', number: '24', bats: 'R' },
+  { id: '2', name: 'Tyler Rodriguez', number: '7', bats: 'L' },
+  { id: '3', name: 'Jake Williams', number: '12', bats: 'S' },
+  { id: '4', name: 'Chris Thompson', number: '33', bats: 'R' },
 ];
 
 const demoOutings: Outing[] = [

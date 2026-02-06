@@ -72,7 +72,7 @@ export default function PlayerDetail() {
     <div className="min-h-screen bg-background pb-24">
       <PageHeader
         title={player.name}
-        subtitle={`#${player.number} • ${player.position}`}
+        subtitle={`#${player.number} • Bats ${player.bats === 'S' ? 'Switch' : player.bats}`}
         showBack
         action={
           <AlertDialog>
