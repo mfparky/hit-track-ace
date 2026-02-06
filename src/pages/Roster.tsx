@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { PlayerCard } from '@/components/hitting/PlayerCard';
@@ -8,15 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Player } from '@/types/hitting';
-
-
+import { useToast } from '@/hooks/use-toast';
 
 export default function Roster() {
-  const { players, outings, addPlayer } = useHitting();
+  const { outings } = useHitting();
+  const { players, isLoading, addPlayer, isAddingPlayer } = usePlayers();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newPlayer, setNewPlayer] = useState({
@@ -30,17 +31,24 @@ export default function Roster() {
     p.number.includes(search)
   );
 
-  const handleAddPlayer = () => {
+  const handleAddPlayer = async () => {
     if (!newPlayer.name || !newPlayer.number) return;
 
-    const player: Player = {
-      id: Date.now().toString(),
-      ...newPlayer,
-    };
-
-    addPlayer(player);
-    setNewPlayer({ name: '', number: '', bats: 'R' });
-    setDialogOpen(false);
+    try {
+      await addPlayer(newPlayer);
+      setNewPlayer({ name: '', number: '', bats: 'R' });
+      setDialogOpen(false);
+      toast({
+        title: 'Player added',
+        description: `${newPlayer.name} has been added to the roster.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add player. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getPlayerStats = (playerId: string) => {
@@ -62,7 +70,7 @@ export default function Roster() {
     <div className="min-h-screen bg-background pb-24">
       <PageHeader
         title="Roster"
-        subtitle={`${players.length} players`}
+        subtitle={isLoading ? 'Loading...' : `${players.length} players`}
         action={
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -112,9 +120,16 @@ export default function Roster() {
                 <Button 
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                   onClick={handleAddPlayer}
-                  disabled={!newPlayer.name || !newPlayer.number}
+                  disabled={!newPlayer.name || !newPlayer.number || isAddingPlayer}
                 >
-                  Add Player
+                  {isAddingPlayer ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add Player'
+                  )}
                 </Button>
               </div>
             </DialogContent>
@@ -136,19 +151,28 @@ export default function Roster() {
 
         {/* Player List */}
         <div className="space-y-3">
-          {filteredPlayers.map((player) => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              stats={getPlayerStats(player.id)}
-              onClick={() => navigate(`/player/${player.id}`)}
-            />
-          ))}
-
-          {filteredPlayers.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No players found</p>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
+              <p className="text-muted-foreground mt-2">Loading roster...</p>
             </div>
+          ) : (
+            <>
+              {filteredPlayers.map((player) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  stats={getPlayerStats(player.id)}
+                  onClick={() => navigate(`/player/${player.id}`)}
+                />
+              ))}
+
+              {filteredPlayers.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>No players found</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
