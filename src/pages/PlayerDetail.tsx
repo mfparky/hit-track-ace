@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
@@ -7,8 +8,9 @@ import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
-import { Target, Zap, TrendingUp, Activity, Trash2, User } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2 } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,10 +26,20 @@ import {
 export default function PlayerDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, outings, deletePlayer } = useHitting();
+  const { outings } = useHitting();
+  const { players, isLoading, deletePlayer } = usePlayers();
+  const { toast } = useToast();
 
   const player = players.find(p => p.id === id);
   const playerOutings = outings.filter(o => o.playerId === id);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!player) {
     return (
@@ -63,9 +75,21 @@ export default function PlayerDetail() {
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
 
-  const handleDelete = () => {
-    deletePlayer(player.id);
-    navigate('/roster');
+  const handleDelete = async () => {
+    try {
+      await deletePlayer(player.id);
+      toast({
+        title: 'Player deleted',
+        description: `${player.name} has been removed from the roster.`,
+      });
+      navigate('/roster');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete player. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
