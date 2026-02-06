@@ -36,7 +36,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
             height: { ideal: 1080 },
             frameRate: { ideal: 60, min: 30 }
           },
-          audio: false
+          audio: true
         });
         
         streamRef.current = stream;
@@ -231,7 +231,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
           height: { ideal: 1080 },
           frameRate: { ideal: 60, min: 30 }
         },
-        audio: false
+        audio: true
       });
       
       streamRef.current = stream;
