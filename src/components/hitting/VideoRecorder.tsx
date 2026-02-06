@@ -125,6 +125,14 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
     }
   }, [isRecording]);
 
+  const toggleRecording = useCallback(() => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }, [isRecording, startRecording, stopRecording]);
+
   const togglePlayback = useCallback(() => {
     if (playbackRef.current) {
       if (isPlaying) {
@@ -304,11 +312,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
           <div className="flex items-center justify-center">
             {cameraReady ? (
               <button
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={isRecording ? stopRecording : undefined}
+                onClick={toggleRecording}
                 className={cn(
                   'w-20 h-20 rounded-full border-4 transition-all flex items-center justify-center',
                   isRecording
@@ -333,7 +337,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
         
         {!recordedVideoUrl && cameraReady && (
           <p className="text-white/60 text-center text-sm mt-4">
-            Hold to record
+            {isRecording ? 'Tap to stop' : 'Tap to record'}
           </p>
         )}
       </div>
