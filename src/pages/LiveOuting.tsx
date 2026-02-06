@@ -5,12 +5,13 @@ import { useOutings } from '@/hooks/useOutings';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { LocationChart } from '@/components/hitting/LocationChart';
+import { VideoRecorder } from '@/components/hitting/VideoRecorder';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { AtBat, SprayChartPoint, Pitch, PitchType, PitchOutcome, HitType } from '@/types/hitting';
-import { ChevronLeft, ChevronRight, RotateCcw, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Loader2, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Step = 'location' | 'pitch_type' | 'outcome' | 'spray' | 'exit_velo';
@@ -78,6 +79,7 @@ export default function LiveOuting() {
   const [showExitVelo, setShowExitVelo] = useState(false);
   const [exitVelo, setExitVelo] = useState('');
   const [isBarrel, setIsBarrel] = useState(false);
+  const [showVideoRecorder, setShowVideoRecorder] = useState(false);
 
   if (playersLoading) {
     return (
@@ -300,14 +302,29 @@ export default function LiveOuting() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Video Recorder Modal */}
+      {showVideoRecorder && (
+        <VideoRecorder onClose={() => setShowVideoRecorder(false)} />
+      )}
+
       <PageHeader
         title={`AB ${outing.atBats.length + 1}`}
         subtitle={player.name}
         showBack
         action={
-          <Button variant="ghost" size="sm" onClick={handleEndOuting} className="text-accent font-semibold">
-            End
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowVideoRecorder(true)}
+              className="text-accent"
+            >
+              <Video className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleEndOuting} className="text-accent font-semibold">
+              End
+            </Button>
+          </div>
         }
       />
 
