@@ -23,6 +23,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
   const [playbackRate, setPlaybackRate] = useState(0.25);
   const [cameraReady, setCameraReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPlayback, setShowPlayback] = useState(false);
 
   // Initialize camera
   useEffect(() => {
@@ -113,10 +114,20 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
         return;
       }
       const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current || 'video/mp4' });
-      console.log('Created blob:', blob.size, 'bytes');
+      console.log('Created blob:', blob.size, 'bytes, type:', mimeTypeRef.current);
       const url = URL.createObjectURL(blob);
+      
+      // Stop the live camera stream to free resources
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      
       setRecordedBlob(blob);
       setRecordedVideoUrl(url);
+      setShowPlayback(true);
       onRecordingComplete?.(url);
     };
 
@@ -141,14 +152,20 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
     }
   }, [isRecording, startRecording, stopRecording]);
 
-  const togglePlayback = useCallback(() => {
+  const togglePlayback = useCallback(async () => {
     if (playbackRef.current) {
+      console.log('togglePlayback called, isPlaying:', isPlaying, 'video src:', playbackRef.current.src);
       if (isPlaying) {
         playbackRef.current.pause();
+        setIsPlaying(false);
       } else {
-        playbackRef.current.play();
+        try {
+          await playbackRef.current.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error('Playback error:', err);
+        }
       }
-      setIsPlaying(!isPlaying);
     }
   }, [isPlaying]);
 
@@ -196,13 +213,36 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
     }
   }, [recordedBlob]);
 
-  const handleRetake = useCallback(() => {
+  const handleRetake = useCallback(async () => {
     if (recordedVideoUrl) {
       URL.revokeObjectURL(recordedVideoUrl);
     }
     setRecordedVideoUrl(null);
     setRecordedBlob(null);
     setIsPlaying(false);
+    setShowPlayback(false);
+    
+    // Restart the camera
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, min: 30 }
+        },
+        audio: false
+      });
+      
+      streamRef.current = stream;
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (err) {
+      console.error('Camera restart error:', err);
+    }
   }, [recordedVideoUrl]);
 
   const playbackRates = [
@@ -235,7 +275,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
         >
           <X className="w-6 h-6" />
         </Button>
-        {recordedVideoUrl && (
+        {showPlayback && recordedVideoUrl && (
           <div className="flex gap-2">
             {playbackRates.map((rate) => (
               <button
@@ -256,20 +296,25 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
       </div>
 
       {/* Video Display */}
-      <div className="flex-1 flex items-center justify-center">
-        {recordedVideoUrl ? (
+      <div className="flex-1 flex items-center justify-center bg-black">
+        {showPlayback && recordedVideoUrl ? (
           <video
             ref={playbackRef}
             src={recordedVideoUrl}
             className="w-full h-full object-contain"
             playsInline
             loop
+            preload="auto"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onLoadedMetadata={() => {
+              console.log('Video loaded, duration:', playbackRef.current?.duration);
               if (playbackRef.current) {
                 playbackRef.current.playbackRate = playbackRate;
               }
+            }}
+            onError={(e) => {
+              console.error('Video playback error:', e);
             }}
           />
         ) : (
@@ -285,7 +330,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
 
       {/* Controls */}
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-        {recordedVideoUrl ? (
+        {showPlayback && recordedVideoUrl ? (
           <div className="flex items-center justify-center gap-6">
             <Button
               variant="ghost"
@@ -343,7 +388,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
           </div>
         )}
         
-        {!recordedVideoUrl && cameraReady && (
+        {!showPlayback && cameraReady && (
           <p className="text-white/60 text-center text-sm mt-4">
             {isRecording ? 'Tap to stop' : 'Tap to record'}
           </p>
