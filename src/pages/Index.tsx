@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
@@ -18,7 +18,7 @@ interface FunFact {
 }
 
 const Index = () => {
-  const { outings } = useHitting();
+  const { outings } = useOutings();
   const { players, isLoading } = usePlayers();
   const navigate = useNavigate();
   const [factIndex, setFactIndex] = useState(0);

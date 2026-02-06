@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { SprayChart } from '@/components/hitting/SprayChart';
@@ -10,6 +10,7 @@ import { SprayChartPoint, OutingType } from '@/types/hitting';
 import { Target, Zap, TrendingUp, Trash2, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,8 +44,9 @@ const resultLabels: Record<string, { label: string; color: string }> = {
 export default function OutingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { outings, deleteOuting } = useHitting();
+  const { outings, deleteOuting } = useOutings();
   const { players, isLoading: playersLoading } = usePlayers();
+  const { toast } = useToast();
 
   const outing = outings.find(o => o.id === id);
   const player = players.find(p => p.id === outing?.playerId);
@@ -83,9 +85,21 @@ export default function OutingDetail() {
     ? sprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / sprayPoints.filter(sp => sp.exitVelocity).length
     : 0;
 
-  const handleDelete = () => {
-    deleteOuting(outing.id);
-    navigate(-1);
+  const handleDelete = async () => {
+    try {
+      await deleteOuting(outing.id);
+      toast({
+        title: 'Outing deleted',
+        description: 'The outing has been removed.',
+      });
+      navigate(-1);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete outing. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleResume = () => {
