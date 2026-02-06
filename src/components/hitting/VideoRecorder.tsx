@@ -107,7 +107,13 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
     };
 
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
+      console.log('MediaRecorder stopped, chunks:', chunksRef.current.length);
+      if (chunksRef.current.length === 0) {
+        console.error('No video data recorded');
+        return;
+      }
+      const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current || 'video/mp4' });
+      console.log('Created blob:', blob.size, 'bytes');
       const url = URL.createObjectURL(blob);
       setRecordedBlob(blob);
       setRecordedVideoUrl(url);
@@ -116,14 +122,16 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
 
     mediaRecorder.start(100);
     setIsRecording(true);
+    console.log('Recording started with mimeType:', mimeTypeRef.current);
   }, [onRecordingComplete]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
+    console.log('stopRecording called, recorder state:', mediaRecorderRef.current?.state);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-  }, [isRecording]);
+  }, []);
 
   const toggleRecording = useCallback(() => {
     if (isRecording) {
