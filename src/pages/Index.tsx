@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
 import { BottomNav } from '@/components/hitting/BottomNav';
@@ -9,14 +10,26 @@ import { Target, Zap, TrendingUp, Activity, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SprayChartPoint } from '@/types/hitting';
 
+interface FunFact {
+  label: string;
+  value: string | number;
+  subtitle: string;
+  emoji: string;
+}
+
 const Index = () => {
   const { outings } = useHitting();
   const { players, isLoading } = usePlayers();
   const navigate = useNavigate();
+  const [factIndex, setFactIndex] = useState(0);
 
   // Calculate aggregate stats
   const allSprayPoints: SprayChartPoint[] = outings.flatMap(o => 
     o.atBats.map(ab => ab.sprayPoint).filter((sp): sp is SprayChartPoint => !!sp)
+  );
+
+  const totalPitches = outings.reduce((acc, o) => 
+    acc + o.atBats.reduce((abAcc, ab) => abAcc + (ab.pitches?.length || 0), 0), 0
   );
 
   const recentOutings = [...outings]
@@ -31,6 +44,10 @@ const Index = () => {
     acc + o.atBats.filter(ab => ['single', 'double', 'triple', 'hr'].includes(ab.result)).length, 0
   );
 
+  const totalHomeRuns = outings.reduce((acc, o) => 
+    acc + o.atBats.filter(ab => ab.result === 'hr').length, 0
+  );
+
   const barrels = allSprayPoints.filter(sp => sp.isBarrel).length;
   const barrelPct = allSprayPoints.length > 0 ? (barrels / allSprayPoints.length) * 100 : 0;
 
@@ -38,7 +55,89 @@ const Index = () => {
     ? allSprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / allSprayPoints.filter(sp => sp.exitVelocity).length
     : 0;
 
-  const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
+  // Build fun facts array
+  const funFacts: FunFact[] = useMemo(() => {
+    const facts: FunFact[] = [];
+    
+    if (totalPitches > 0) {
+      facts.push({
+        label: 'Pitches Seen',
+        value: totalPitches.toLocaleString(),
+        subtitle: 'Total pitches tracked',
+        emoji: '⚾'
+      });
+    }
+    
+    if (barrels > 0) {
+      facts.push({
+        label: 'Barrels',
+        value: barrels,
+        subtitle: 'Sweet spot contact!',
+        emoji: '🛢️'
+      });
+    }
+    
+    if (totalHits > 0) {
+      facts.push({
+        label: 'Total Hits',
+        value: totalHits,
+        subtitle: `Across ${totalABs} at-bats`,
+        emoji: '💥'
+      });
+    }
+    
+    if (totalHomeRuns > 0) {
+      facts.push({
+        label: 'Home Runs',
+        value: totalHomeRuns,
+        subtitle: 'Going yard!',
+        emoji: '🚀'
+      });
+    }
+    
+    if (outings.length > 0) {
+      facts.push({
+        label: 'Sessions Logged',
+        value: outings.length,
+        subtitle: 'Keep grinding!',
+        emoji: '📊'
+      });
+    }
+
+    if (allSprayPoints.length > 0) {
+      facts.push({
+        label: 'Balls in Play',
+        value: allSprayPoints.length,
+        subtitle: 'Making contact!',
+        emoji: '🎯'
+      });
+    }
+    
+    // Default if no data yet
+    if (facts.length === 0) {
+      facts.push({
+        label: 'Ready to Track',
+        value: '0',
+        subtitle: 'Start your first session!',
+        emoji: '⚡'
+      });
+    }
+    
+    return facts;
+  }, [totalPitches, barrels, totalHits, totalABs, totalHomeRuns, outings.length, allSprayPoints.length]);
+
+  // Rotate facts every 4 seconds
+  useEffect(() => {
+    if (funFacts.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setFactIndex((prev) => (prev + 1) % funFacts.length);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [funFacts.length]);
+
+  const currentFact = funFacts[factIndex] || funFacts[0];
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -51,18 +150,37 @@ const Index = () => {
         
         <div className="px-4 pb-8 max-w-lg mx-auto">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-primary-foreground/70 text-sm font-medium">Team Average</p>
-              <p className="text-5xl font-bold font-mono tracking-tight">
-                .{battingAvg.toFixed(3).replace('0.', '')}
+            <div className="min-w-0 flex-1">
+              <p className="text-primary-foreground/70 text-sm font-medium flex items-center gap-2">
+                <span className="text-lg">{currentFact.emoji}</span>
+                {currentFact.label}
+              </p>
+              <p className="text-5xl font-bold font-mono tracking-tight animate-fade-in" key={factIndex}>
+                {currentFact.value}
               </p>
               <p className="text-primary-foreground/70 text-sm mt-1">
-                {totalHits} hits in {totalABs} ABs
+                {currentFact.subtitle}
               </p>
+              {/* Dots indicator */}
+              {funFacts.length > 1 && (
+                <div className="flex gap-1.5 mt-3">
+                  {funFacts.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setFactIndex(i)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                        i === factIndex 
+                          ? 'bg-primary-foreground w-4' 
+                          : 'bg-primary-foreground/40 hover:bg-primary-foreground/60'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Mini Spray Chart */}
-            <div className="opacity-90">
+            <div className="opacity-90 flex-shrink-0">
               <SprayChart points={allSprayPoints.slice(0, 10)} size="sm" />
             </div>
           </div>
