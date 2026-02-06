@@ -1,12 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { StatCard } from '@/components/hitting/StatCard';
 import { Button } from '@/components/ui/button';
 import { SprayChartPoint, OutingType } from '@/types/hitting';
-import { Target, Zap, TrendingUp, Trash2, Calendar, MapPin } from 'lucide-react';
+import { Target, Zap, TrendingUp, Trash2, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -42,15 +43,25 @@ const resultLabels: Record<string, { label: string; color: string }> = {
 export default function OutingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, outings, deleteOuting } = useHitting();
+  const { outings, deleteOuting } = useHitting();
+  const { players, isLoading: playersLoading } = usePlayers();
 
   const outing = outings.find(o => o.id === id);
   const player = players.find(p => p.id === outing?.playerId);
 
-  if (!outing || !player) {
+  if (playersLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!outing || !player) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <p className="text-muted-foreground">Outing not found</p>
+        <BottomNav />
       </div>
     );
   }
