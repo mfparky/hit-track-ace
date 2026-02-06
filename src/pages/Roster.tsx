@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { PlayerCard } from '@/components/hitting/PlayerCard';
@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Roster() {
-  const { outings } = useHitting();
+  const { outings } = useOutings();
   const { players, isLoading, addPlayer, isAddingPlayer } = usePlayers();
   const navigate = useNavigate();
   const { toast } = useToast();

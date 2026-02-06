@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { LocationChart } from '@/components/hitting/LocationChart';
@@ -62,7 +62,7 @@ const hitResults: { value: SprayChartPoint['result']; label: string; color: stri
 export default function LiveOuting() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { outings, updateOuting } = useHitting();
+  const { outings, updateOuting } = useOutings();
   const { players, isLoading: playersLoading } = usePlayers();
 
   const outing = outings.find(o => o.id === id);

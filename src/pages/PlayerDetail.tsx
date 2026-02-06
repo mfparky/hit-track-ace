@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
@@ -26,7 +26,7 @@ import {
 export default function PlayerDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { outings } = useHitting();
+  const { outings } = useOutings();
   const { players, isLoading, deletePlayer } = usePlayers();
   const { toast } = useToast();
 

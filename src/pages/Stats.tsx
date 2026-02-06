@@ -1,5 +1,5 @@
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
@@ -11,7 +11,7 @@ import { SprayChartPoint } from '@/types/hitting';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Stats() {
-  const { outings } = useHitting();
+  const { outings } = useOutings();
   const { players } = usePlayers();
   const navigate = useNavigate();
 

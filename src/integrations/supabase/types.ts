@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      outings: {
+        Row: {
+          at_bats: Json
+          created_at: string
+          date: string
+          id: string
+          is_complete: boolean
+          notes: string | null
+          opponent: string | null
+          player_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          at_bats?: Json
+          created_at?: string
+          date?: string
+          id?: string
+          is_complete?: boolean
+          notes?: string | null
+          opponent?: string | null
+          player_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          at_bats?: Json
+          created_at?: string
+          date?: string
+          id?: string
+          is_complete?: boolean
+          notes?: string | null
+          opponent?: string | null
+          player_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outings_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           avatar: string | null

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useHitting } from '@/context/HittingContext';
 import { usePlayers } from '@/hooks/usePlayers';
+import { useOutings } from '@/hooks/useOutings';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Outing, OutingType } from '@/types/hitting';
 import { Zap, ClipboardList, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const outingTypes: { value: OutingType; label: string; description: string }[] = [
   { value: 'game', label: 'Game', description: 'Competitive game at-bats' },
@@ -21,47 +22,63 @@ const outingTypes: { value: OutingType; label: string; description: string }[] =
 
 export default function NewOuting() {
   const navigate = useNavigate();
-  const { addOuting } = useHitting();
+  const { addOuting } = useOutings();
   const { players, isLoading } = usePlayers();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
   const [outingData, setOutingData] = useState({
     playerId: '',
     type: '' as OutingType,
     opponent: '',
   });
 
-  const handleStartLive = () => {
-    if (!outingData.playerId || !outingData.type) return;
+  const handleStartLive = async () => {
+    if (!outingData.playerId || !outingData.type || isCreating) return;
 
-    const outing: Outing = {
-      id: Date.now().toString(),
-      playerId: outingData.playerId,
-      type: outingData.type,
-      date: new Date().toISOString().split('T')[0],
-      opponent: outingData.opponent || undefined,
-      atBats: [],
-      isComplete: false,
-    };
-
-    addOuting(outing);
-    navigate(`/live/${outing.id}`);
+    setIsCreating(true);
+    try {
+      const outing = await addOuting({
+        playerId: outingData.playerId,
+        type: outingData.type,
+        date: new Date().toISOString().split('T')[0],
+        opponent: outingData.opponent || undefined,
+        atBats: [],
+        isComplete: false,
+      });
+      navigate(`/live/${outing.id}`);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create outing. Please try again.',
+        variant: 'destructive',
+      });
+      setIsCreating(false);
+    }
   };
 
-  const handleStartLog = () => {
-    if (!outingData.playerId || !outingData.type) return;
+  const handleStartLog = async () => {
+    if (!outingData.playerId || !outingData.type || isCreating) return;
 
-    const outing: Outing = {
-      id: Date.now().toString(),
-      playerId: outingData.playerId,
-      type: outingData.type,
-      date: new Date().toISOString().split('T')[0],
-      opponent: outingData.opponent || undefined,
-      atBats: [],
-      isComplete: false,
-    };
-
-    addOuting(outing);
-    navigate(`/log/${outing.id}`);
+    setIsCreating(true);
+    try {
+      const outing = await addOuting({
+        playerId: outingData.playerId,
+        type: outingData.type,
+        date: new Date().toISOString().split('T')[0],
+        opponent: outingData.opponent || undefined,
+        atBats: [],
+        isComplete: false,
+      });
+      navigate(`/log/${outing.id}`);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create outing. Please try again.',
+        variant: 'destructive',
+      });
+      setIsCreating(false);
+    }
   };
 
   return (
