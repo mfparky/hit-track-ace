@@ -12,7 +12,7 @@ import { Plus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Player } from '@/types/hitting';
 
-const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH', 'UTIL'];
+
 
 export default function Roster() {
   const { players, outings, addPlayer } = useHitting();
@@ -22,7 +22,6 @@ export default function Roster() {
   const [newPlayer, setNewPlayer] = useState({
     name: '',
     number: '',
-    position: '',
     bats: 'R' as 'L' | 'R' | 'S',
   });
 
@@ -32,7 +31,7 @@ export default function Roster() {
   );
 
   const handleAddPlayer = () => {
-    if (!newPlayer.name || !newPlayer.number || !newPlayer.position) return;
+    if (!newPlayer.name || !newPlayer.number) return;
 
     const player: Player = {
       id: Date.now().toString(),
@@ -40,7 +39,7 @@ export default function Roster() {
     };
 
     addPlayer(player);
-    setNewPlayer({ name: '', number: '', position: '', bats: 'R' });
+    setNewPlayer({ name: '', number: '', bats: 'R' });
     setDialogOpen(false);
   };
 
@@ -85,32 +84,14 @@ export default function Roster() {
                     onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="number">Number</Label>
-                    <Input
-                      id="number"
-                      placeholder="#"
-                      value={newPlayer.number}
-                      onChange={(e) => setNewPlayer({ ...newPlayer, number: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Position</Label>
-                    <Select
-                      value={newPlayer.position}
-                      onValueChange={(value) => setNewPlayer({ ...newPlayer, position: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {positions.map((pos) => (
-                          <SelectItem key={pos} value={pos}>{pos}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label htmlFor="number">Number</Label>
+                  <Input
+                    id="number"
+                    placeholder="#"
+                    value={newPlayer.number}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, number: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label>Bats</Label>
@@ -131,7 +112,7 @@ export default function Roster() {
                 <Button 
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                   onClick={handleAddPlayer}
-                  disabled={!newPlayer.name || !newPlayer.number || !newPlayer.position}
+                  disabled={!newPlayer.name || !newPlayer.number}
                 >
                   Add Player
                 </Button>
