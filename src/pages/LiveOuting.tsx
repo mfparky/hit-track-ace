@@ -292,6 +292,11 @@ export default function LiveOuting() {
     navigate(`/outing/${outing.id}`);
   };
 
+  const handleSaveAndExit = () => {
+    // Just navigate away - outing stays incomplete and can be resumed
+    navigate(`/outing/${outing.id}`);
+  };
+
   const stepTitles: Record<Step, string> = {
     location: 'Tap pitch location',
     pitch_type: 'Select pitch type',
@@ -320,6 +325,9 @@ export default function LiveOuting() {
               className="text-accent"
             >
               <Video className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSaveAndExit} className="text-muted-foreground font-medium">
+              Save
             </Button>
             <Button variant="ghost" size="sm" onClick={handleEndOuting} className="text-accent font-semibold">
               End
