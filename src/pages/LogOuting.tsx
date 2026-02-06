@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { LocationChart } from '@/components/hitting/LocationChart';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { AtBat, SprayChartPoint, HitType, Pitch, PitchOutcome } from '@/types/hitting';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const resultOptions: { value: AtBat['result']; label: string; color: string }[] = [
@@ -33,7 +34,8 @@ const hitTypes: { value: HitType; label: string }[] = [
 export default function LogOuting() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, outings, updateOuting } = useHitting();
+  const { outings, updateOuting } = useHitting();
+  const { players, isLoading: playersLoading } = usePlayers();
 
   const outing = outings.find(o => o.id === id);
   const player = players.find(p => p.id === outing?.playerId);
@@ -58,6 +60,14 @@ export default function LogOuting() {
   });
   const [showExitVelo, setShowExitVelo] = useState(false);
   const [showPitchLocation, setShowPitchLocation] = useState(true);
+
+  if (playersLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!outing || !player) {
     return (

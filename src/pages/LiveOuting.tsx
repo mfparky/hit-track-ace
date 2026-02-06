@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { LocationChart } from '@/components/hitting/LocationChart';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { AtBat, SprayChartPoint, Pitch, PitchType, PitchOutcome, HitType } from '@/types/hitting';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Step = 'location' | 'pitch_type' | 'outcome' | 'spray' | 'exit_velo';
@@ -61,7 +62,8 @@ const hitResults: { value: SprayChartPoint['result']; label: string; color: stri
 export default function LiveOuting() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, outings, updateOuting } = useHitting();
+  const { outings, updateOuting } = useHitting();
+  const { players, isLoading: playersLoading } = usePlayers();
 
   const outing = outings.find(o => o.id === id);
   const player = players.find(p => p.id === outing?.playerId);
@@ -76,6 +78,14 @@ export default function LiveOuting() {
   const [showExitVelo, setShowExitVelo] = useState(false);
   const [exitVelo, setExitVelo] = useState('');
   const [isBarrel, setIsBarrel] = useState(false);
+
+  if (playersLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!outing || !player) {
     return (

@@ -1,15 +1,17 @@
 import { useHitting } from '@/context/HittingContext';
+import { usePlayers } from '@/hooks/usePlayers';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
 import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
-import { Target, Zap, TrendingUp, Activity } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SprayChartPoint } from '@/types/hitting';
 
 const Index = () => {
-  const { players, outings } = useHitting();
+  const { outings } = useHitting();
+  const { players, isLoading } = usePlayers();
   const navigate = useNavigate();
 
   // Calculate aggregate stats
@@ -83,8 +85,8 @@ const Index = () => {
             iconColor="text-yellow-500"
           />
           <StatCard
-            label="Hard Hit %"
-            value={`${((allSprayPoints.filter(sp => (sp.exitVelocity || 0) >= 95).length / (allSprayPoints.length || 1)) * 100).toFixed(1)}%`}
+            label="Total Hits"
+            value={totalHits}
             icon={TrendingUp}
             iconColor="text-green-500"
           />
@@ -135,7 +137,7 @@ const Index = () => {
       {/* Roster Preview */}
       <div className="px-4 mt-8 max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Roster ({players.length})</h2>
+          <h2 className="text-lg font-semibold">Roster ({isLoading ? '...' : players.length})</h2>
           <button 
             onClick={() => navigate('/roster')}
             className="text-sm font-medium text-accent hover:underline"
@@ -144,22 +146,28 @@ const Index = () => {
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-          {players.map((player) => (
-            <button
-              key={player.id}
-              onClick={() => navigate(`/player/${player.id}`)}
-              className="flex-shrink-0 flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-xl hover:border-accent/50 transition-all"
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold">
-                {player.number}
-              </div>
-              <span className="text-sm font-medium truncate max-w-[80px]">
-                {player.name.split(' ')[0]}
-              </span>
-            </button>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-4">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {players.map((player) => (
+              <button
+                key={player.id}
+                onClick={() => navigate(`/player/${player.id}`)}
+                className="flex-shrink-0 flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-xl hover:border-accent/50 transition-all"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold">
+                  {player.number}
+                </div>
+                <span className="text-sm font-medium truncate max-w-[80px]">
+                  {player.name.split(' ')[0]}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <BottomNav />
