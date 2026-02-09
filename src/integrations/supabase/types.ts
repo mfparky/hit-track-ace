@@ -70,6 +70,7 @@ export type Database = {
           name: string
           number: string
           updated_at: string
+          youtube_playlist_url: string | null
         }
         Insert: {
           avatar?: string | null
@@ -79,6 +80,7 @@ export type Database = {
           name: string
           number: string
           updated_at?: string
+          youtube_playlist_url?: string | null
         }
         Update: {
           avatar?: string | null
@@ -88,6 +90,7 @@ export type Database = {
           name?: string
           number?: string
           updated_at?: string
+          youtube_playlist_url?: string | null
         }
         Relationships: []
       }

@@ -31,6 +31,7 @@ export interface Player {
   number: string;
   bats: 'L' | 'R' | 'S';
   avatar?: string;
+  youtubePlaylistUrl?: string;
 }
 
 export interface SprayChartPoint {

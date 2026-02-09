@@ -21,6 +21,7 @@ export function usePlayers() {
         number: p.number,
         bats: p.bats as 'L' | 'R' | 'S',
         avatar: p.avatar ?? undefined,
+        youtubePlaylistUrl: (p as any).youtube_playlist_url ?? undefined,
       }));
     },
   });
@@ -55,7 +56,8 @@ export function usePlayers() {
           number: player.number,
           bats: player.bats,
           avatar: player.avatar ?? null,
-        })
+          youtube_playlist_url: player.youtubePlaylistUrl ?? null,
+        } as any)
         .eq('id', player.id);
       
       if (error) throw error;

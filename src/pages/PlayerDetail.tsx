@@ -8,9 +8,11 @@ import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
-import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2 } from 'lucide-react';
+import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +29,11 @@ export default function PlayerDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { outings } = useOutings();
-  const { players, isLoading, deletePlayer } = usePlayers();
+  const { players, isLoading, deletePlayer, updatePlayer } = usePlayers();
   const { toast } = useToast();
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [isEditingYoutube, setIsEditingYoutube] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const player = players.find(p => p.id === id);
   const playerOutings = outings.filter(o => o.playerId === id);
@@ -91,6 +96,30 @@ export default function PlayerDetail() {
       });
     }
   };
+
+  const parentUrl = `${window.location.origin}/parent/${player.id}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(parentUrl);
+    setCopied(true);
+    toast({ title: 'Link copied!', description: 'Share this with parents.' });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveYoutube = async () => {
+    try {
+      await updatePlayer({ ...player, youtubePlaylistUrl: youtubeUrl || undefined });
+      setIsEditingYoutube(false);
+      toast({ title: 'Playlist saved' });
+    } catch {
+      toast({ title: 'Error saving playlist', variant: 'destructive' });
+    }
+  };
+
+  // Initialize youtube URL state when player loads
+  if (!isEditingYoutube && youtubeUrl === '' && player.youtubePlaylistUrl) {
+    setYoutubeUrl(player.youtubePlaylistUrl);
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -218,6 +247,50 @@ export default function PlayerDetail() {
             iconColor="text-blue-500"
             size="sm"
           />
+        </div>
+
+        {/* YouTube Playlist */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">YouTube Playlist</h3>
+          {isEditingYoutube ? (
+            <div className="flex gap-2">
+              <Input
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="https://youtube.com/playlist?list=..."
+                className="flex-1"
+              />
+              <Button size="sm" onClick={handleSaveYoutube}>Save</Button>
+              <Button size="sm" variant="ghost" onClick={() => setIsEditingYoutube(false)}>Cancel</Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              {player.youtubePlaylistUrl ? (
+                <a href={player.youtubePlaylistUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+                    <Youtube className="w-4 h-4 text-red-500" />
+                    View Playlist
+                  </Button>
+                </a>
+              ) : (
+                <span className="text-sm text-muted-foreground flex-1">No playlist linked</span>
+              )}
+              <Button size="sm" variant="ghost" onClick={() => { setYoutubeUrl(player.youtubePlaylistUrl || ''); setIsEditingYoutube(true); }}>
+                <Link className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Parent Share Link */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Parent Dashboard Link</h3>
+          <div className="flex gap-2">
+            <Input value={parentUrl} readOnly className="flex-1 text-xs" />
+            <Button size="sm" variant="outline" onClick={handleCopyLink}>
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
 
         {/* Outings */}
