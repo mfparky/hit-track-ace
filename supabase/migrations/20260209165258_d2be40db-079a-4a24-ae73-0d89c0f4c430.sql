@@ -1,0 +1,1 @@
+ALTER TABLE public.players ADD COLUMN youtube_playlist_url text DEFAULT NULL;

@@ -7,6 +7,7 @@ import { HittingProvider } from "@/context/HittingContext";
 import Index from "./pages/Index";
 import Roster from "./pages/Roster";
 import PlayerDetail from "./pages/PlayerDetail";
+import ParentDashboard from "./pages/ParentDashboard";
 import NewOuting from "./pages/NewOuting";
 import LiveOuting from "./pages/LiveOuting";
 import LogOuting from "./pages/LogOuting";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/roster" element={<Roster />} />
             <Route path="/player/:id" element={<PlayerDetail />} />
+            <Route path="/parent/:id" element={<ParentDashboard />} />
             <Route path="/new-outing" element={<NewOuting />} />
             <Route path="/live/:id" element={<LiveOuting />} />
             <Route path="/log/:id" element={<LogOuting />} />
