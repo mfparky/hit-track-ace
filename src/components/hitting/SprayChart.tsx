@@ -5,7 +5,7 @@ interface SprayChartProps {
   points: SprayChartPoint[];
   onAddPoint?: (x: number, y: number) => void;
   interactive?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const resultColors: Record<SprayChartPoint['result'], string> = {

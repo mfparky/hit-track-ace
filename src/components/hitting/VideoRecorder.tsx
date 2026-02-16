@@ -63,6 +63,7 @@ export function VideoRecorder({ onClose, onRecordingComplete }: VideoRecorderPro
         URL.revokeObjectURL(recordedVideoUrl);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup uses recordedVideoUrl at unmount time only
   }, []);
 
   const startRecording = useCallback(() => {

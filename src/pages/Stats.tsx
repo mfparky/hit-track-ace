@@ -5,9 +5,11 @@ import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
 import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
+import { SprayChartLegend } from '@/components/hitting/SprayChartLegend';
 import { Target, Zap, TrendingUp, Activity, Award, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SprayChartPoint } from '@/types/hitting';
+import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Stats() {
@@ -32,12 +34,8 @@ export default function Stats() {
     acc + o.atBats.filter(ab => ab.result === 'hr').length, 0
   );
 
-  const barrels = allSprayPoints.filter(sp => sp.isBarrel).length;
-  const barrelPct = allSprayPoints.length > 0 ? (barrels / allSprayPoints.length) * 100 : 0;
-
-  const avgExitVelo = allSprayPoints.filter(sp => sp.exitVelocity).length > 0
-    ? allSprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / allSprayPoints.filter(sp => sp.exitVelocity).length
-    : 0;
+  const barrelPct = calcBarrelPct(allSprayPoints);
+  const avgExitVelo = calcAvgExitVelo(allSprayPoints);
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
   
@@ -117,23 +115,7 @@ export default function Stats() {
               <div className="flex justify-center">
                 <SprayChart points={allSprayPoints} size="lg" />
               </div>
-              <div className="flex justify-center gap-4 mt-4 text-xs">
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-spray-single" /> 1B
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-spray-double" /> 2B
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-spray-triple" /> 3B
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-spray-hr" /> HR
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-spray-out" /> Out
-                </span>
-              </div>
+              <SprayChartLegend />
             </div>
 
             <div className="grid grid-cols-3 gap-3">

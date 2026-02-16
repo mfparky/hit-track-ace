@@ -6,12 +6,14 @@ import { PageHeader } from '@/components/hitting/PageHeader';
 import { StatCard } from '@/components/hitting/StatCard';
 import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
+import { SprayChartLegend } from '@/components/hitting/SprayChartLegend';
 import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
 import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
+import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
@@ -71,12 +73,8 @@ export default function PlayerDetail() {
     acc + o.atBats.filter(ab => ['single', 'double', 'triple', 'hr'].includes(ab.result)).length, 0
   );
 
-  const barrels = allSprayPoints.filter(sp => sp.isBarrel).length;
-  const barrelPct = allSprayPoints.length > 0 ? (barrels / allSprayPoints.length) * 100 : 0;
-
-  const avgExitVelo = allSprayPoints.filter(sp => sp.exitVelocity).length > 0
-    ? allSprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / allSprayPoints.filter(sp => sp.exitVelocity).length
-    : 0;
+  const barrelPct = calcBarrelPct(allSprayPoints);
+  const avgExitVelo = calcAvgExitVelo(allSprayPoints);
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
 
@@ -117,9 +115,11 @@ export default function PlayerDetail() {
   };
 
   // Initialize youtube URL state when player loads
-  if (!isEditingYoutube && youtubeUrl === '' && player.youtubePlaylistUrl) {
-    setYoutubeUrl(player.youtubePlaylistUrl);
-  }
+  useEffect(() => {
+    if (!isEditingYoutube && youtubeUrl === '' && player.youtubePlaylistUrl) {
+      setYoutubeUrl(player.youtubePlaylistUrl);
+    }
+  }, [player.youtubePlaylistUrl, isEditingYoutube, youtubeUrl]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -182,23 +182,7 @@ export default function PlayerDetail() {
             <div className="flex justify-center">
               <SprayChart points={allSprayPoints} size="lg" />
             </div>
-            <div className="flex justify-center gap-4 mt-4 text-xs">
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-spray-single" /> 1B
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-spray-double" /> 2B
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-spray-triple" /> 3B
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-spray-hr" /> HR
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-spray-out" /> Out
-              </span>
-            </div>
+            <SprayChartLegend />
           </div>
         )}
 

@@ -9,6 +9,7 @@ import { SprayChart } from '@/components/hitting/SprayChart';
 import { Target, Zap, TrendingUp, Activity, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SprayChartPoint } from '@/types/hitting';
+import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
 
 interface FunFact {
   label: string;
@@ -49,11 +50,8 @@ const Index = () => {
   );
 
   const barrels = allSprayPoints.filter(sp => sp.isBarrel).length;
-  const barrelPct = allSprayPoints.length > 0 ? (barrels / allSprayPoints.length) * 100 : 0;
-
-  const avgExitVelo = allSprayPoints.filter(sp => sp.exitVelocity).length > 0
-    ? allSprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / allSprayPoints.filter(sp => sp.exitVelocity).length
-    : 0;
+  const barrelPct = calcBarrelPct(allSprayPoints);
+  const avgExitVelo = calcAvgExitVelo(allSprayPoints);
 
   // Build fun facts array
   const funFacts: FunFact[] = useMemo(() => {
@@ -168,9 +166,10 @@ const Index = () => {
                     <button
                       key={i}
                       onClick={() => setFactIndex(i)}
+                      aria-label={`Go to fact ${i + 1} of ${funFacts.length}`}
                       className={`w-1.5 h-1.5 rounded-full transition-all ${
-                        i === factIndex 
-                          ? 'bg-primary-foreground w-4' 
+                        i === factIndex
+                          ? 'bg-primary-foreground w-4'
                           : 'bg-primary-foreground/40 hover:bg-primary-foreground/60'
                       }`}
                     />
