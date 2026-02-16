@@ -6,10 +6,12 @@ import { StatCard } from '@/components/hitting/StatCard';
 import { OutingCard } from '@/components/hitting/OutingCard';
 import { SprayChart } from '@/components/hitting/SprayChart';
 import { SprayChartLegend } from '@/components/hitting/SprayChartLegend';
+import { ProgressionChart } from '@/components/hitting/ProgressionChart';
+import { PlateDiscipline } from '@/components/hitting/PlateDiscipline';
 import { Target, Zap, TrendingUp, Activity, Award, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SprayChartPoint } from '@/types/hitting';
-import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
+import { calcAvgExitVelo, calcBarrelPct, calcOutingTrends, calcPlateDiscipline } from '@/lib/stats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Stats() {
@@ -38,9 +40,11 @@ export default function Stats() {
   const avgExitVelo = calcAvgExitVelo(allSprayPoints);
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
-  
 
-  const sortedOutings = [...outings].sort((a, b) => 
+  const trendData = calcOutingTrends(outings);
+  const disciplineStats = calcPlateDiscipline(outings);
+
+  const sortedOutings = [...outings].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
@@ -50,8 +54,10 @@ export default function Stats() {
 
       <div className="px-4 py-4 max-w-lg mx-auto">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-6">
+          <TabsList className="w-full grid grid-cols-5 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="trends">Trends</TabsTrigger>
+            <TabsTrigger value="discipline">Discipline</TabsTrigger>
             <TabsTrigger value="spray">Spray</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
@@ -107,6 +113,14 @@ export default function Stats() {
                 iconColor="text-pink-500"
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-6 animate-fade-in">
+            <ProgressionChart data={trendData} />
+          </TabsContent>
+
+          <TabsContent value="discipline" className="space-y-6 animate-fade-in">
+            <PlateDiscipline stats={disciplineStats} />
           </TabsContent>
 
           <TabsContent value="spray" className="space-y-6 animate-fade-in">
