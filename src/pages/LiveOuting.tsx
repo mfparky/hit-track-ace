@@ -316,7 +316,13 @@ export default function LiveOuting() {
     <div className="min-h-screen bg-background">
       {/* Video Recorder Modal */}
       {showVideoRecorder && (
-        <VideoRecorder onClose={() => setShowVideoRecorder(false)} />
+        <VideoRecorder
+          onClose={() => setShowVideoRecorder(false)}
+          playerId={player?.id}
+          onSave={(url) => {
+            console.log('Video saved:', url);
+          }}
+        />
       )}
 
       <PageHeader
