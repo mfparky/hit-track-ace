@@ -10,18 +10,12 @@ export function useVideoStorage() {
 
   const checkBucket = async (): Promise<boolean> => {
     try {
-      const { error } = await supabase.storage.getBucket(BUCKET_NAME);
+      // Try a lightweight list to verify the bucket is accessible
+      const { error } = await supabase.storage.from(BUCKET_NAME).list('', { limit: 1 });
       if (error) {
-        // Try to create it
-        const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
-          public: true,
-          fileSizeLimit: 52428800, // 50MB
-        });
-        if (createError) {
-          console.warn('Could not create swing-videos bucket:', createError.message);
-          setStorageAvailable(false);
-          return false;
-        }
+        console.warn('Storage bucket not accessible:', error.message);
+        setStorageAvailable(false);
+        return false;
       }
       setStorageAvailable(true);
       return true;
