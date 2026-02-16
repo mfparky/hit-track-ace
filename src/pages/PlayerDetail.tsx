@@ -9,9 +9,11 @@ import { SprayChart } from '@/components/hitting/SprayChart';
 import { SprayChartLegend } from '@/components/hitting/SprayChartLegend';
 import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
+import { ProgressionChart } from '@/components/hitting/ProgressionChart';
+import { PlateDiscipline } from '@/components/hitting/PlateDiscipline';
 import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
-import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
+import { calcAvgExitVelo, calcBarrelPct, calcOutingTrends, calcPlateDiscipline } from '@/lib/stats';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -77,6 +79,9 @@ export default function PlayerDetail() {
   const avgExitVelo = calcAvgExitVelo(allSprayPoints);
 
   const battingAvg = totalABs > 0 ? (totalHits / totalABs) : 0;
+
+  const trendData = calcOutingTrends(playerOutings);
+  const disciplineStats = calcPlateDiscipline(playerOutings);
 
   const handleDelete = async () => {
     try {
@@ -232,6 +237,22 @@ export default function PlayerDetail() {
             size="sm"
           />
         </div>
+
+        {/* Progression Trends */}
+        {playerOutings.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Progression</h3>
+            <ProgressionChart data={trendData} />
+          </div>
+        )}
+
+        {/* Plate Discipline */}
+        {disciplineStats.totalPitches > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Plate Discipline</h3>
+            <PlateDiscipline stats={disciplineStats} />
+          </div>
+        )}
 
         {/* YouTube Playlist */}
         <div className="mb-6">
