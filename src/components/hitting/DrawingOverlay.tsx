@@ -176,11 +176,11 @@ export function DrawingOverlay({ active, onToggle }: DrawingOverlayProps) {
         />
       </div>
 
-      {/* Toggle button - always visible when in playback */}
+      {/* Toggle button - positioned below the header to avoid overlap */}
       <button
         onClick={onToggle}
         className={cn(
-          'absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all',
+          'absolute top-20 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all',
           active
             ? 'bg-accent text-accent-foreground'
             : 'bg-white/20 text-white hover:bg-white/30'
@@ -191,7 +191,7 @@ export function DrawingOverlay({ active, onToggle }: DrawingOverlayProps) {
 
       {/* Toolbar - only when active */}
       {active && (
-        <div className="absolute top-16 right-4 z-30 flex flex-col gap-2 bg-black/70 rounded-xl p-2">
+        <div className="absolute top-32 right-4 z-30 flex flex-col gap-2 bg-black/70 rounded-xl p-2">
           {/* Tools */}
           <div className="flex flex-col gap-1">
             {([
