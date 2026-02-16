@@ -7,6 +7,7 @@ import { SprayChart } from '@/components/hitting/SprayChart';
 import { StatCard } from '@/components/hitting/StatCard';
 import { Button } from '@/components/ui/button';
 import { SprayChartPoint, OutingType } from '@/types/hitting';
+import { calcAvgExitVelo, calcBarrelPct } from '@/lib/stats';
 import { Target, Zap, TrendingUp, Trash2, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -78,12 +79,8 @@ export default function OutingDetail() {
   ).length;
   const battingAvg = totalABs > 0 ? hits / totalABs : 0;
 
-  const barrels = sprayPoints.filter(sp => sp.isBarrel).length;
-  const barrelPct = sprayPoints.length > 0 ? (barrels / sprayPoints.length) * 100 : 0;
-
-  const avgExitVelo = sprayPoints.filter(sp => sp.exitVelocity).length > 0
-    ? sprayPoints.reduce((acc, sp) => acc + (sp.exitVelocity || 0), 0) / sprayPoints.filter(sp => sp.exitVelocity).length
-    : 0;
+  const barrelPct = calcBarrelPct(sprayPoints);
+  const avgExitVelo = calcAvgExitVelo(sprayPoints);
 
   const handleDelete = async () => {
     try {
