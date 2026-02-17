@@ -11,10 +11,12 @@ import { ZoneHeatMap } from '@/components/hitting/ZoneHeatMap';
 import { Button } from '@/components/ui/button';
 import { ProgressionChart } from '@/components/hitting/ProgressionChart';
 import { PlateDiscipline } from '@/components/hitting/PlateDiscipline';
+import { ReportCard } from '@/components/hitting/ReportCard';
 import { PlayerVideos } from '@/components/hitting/PlayerVideos';
 import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check, Video } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
 import { calcAvgExitVelo, calcBarrelPct, calcOutingTrends, calcPlateDiscipline } from '@/lib/stats';
+import { calcReportCard } from '@/lib/grades';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -90,6 +92,19 @@ export default function PlayerDetail() {
 
   const trendData = calcOutingTrends(playerOutings);
   const disciplineStats = calcPlateDiscipline(playerOutings);
+
+  const reportCard = calcReportCard({
+    barrelPct,
+    avgExitVelo,
+    contactPct: disciplineStats.contactPct,
+    whiffRate: disciplineStats.whiffRate,
+    battingAvg: battingAvg,
+    chasePct: disciplineStats.chasePct,
+    calledStrikePct: disciplineStats.calledStrikePct,
+    avgPitchesPerAB: disciplineStats.avgPitchesPerAB,
+    totalAtBats: totalABs,
+    totalPitches: disciplineStats.totalPitches,
+  });
 
   const handleDelete = async () => {
     try {
@@ -238,6 +253,12 @@ export default function PlayerDetail() {
             iconColor="text-blue-500"
             size="sm"
           />
+        </div>
+
+        {/* Report Card */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Report Card</h3>
+          <ReportCard data={reportCard} playerName={player.name} />
         </div>
 
         {/* Progression Trends */}
