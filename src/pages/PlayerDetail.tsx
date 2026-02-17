@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { ProgressionChart } from '@/components/hitting/ProgressionChart';
 import { PlateDiscipline } from '@/components/hitting/PlateDiscipline';
 import { ReportCard } from '@/components/hitting/ReportCard';
-import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check } from 'lucide-react';
+import { PlayerVideos } from '@/components/hitting/PlayerVideos';
+import { Target, Zap, TrendingUp, Activity, Trash2, User, Loader2, Link, Youtube, Copy, Check, Video } from 'lucide-react';
 import { SprayChartPoint, Pitch } from '@/types/hitting';
 import { calcAvgExitVelo, calcBarrelPct, calcOutingTrends, calcPlateDiscipline } from '@/lib/stats';
 import { calcReportCard } from '@/lib/grades';
@@ -43,6 +44,13 @@ export default function PlayerDetail() {
 
   const player = players.find(p => p.id === id);
   const playerOutings = outings.filter(o => o.playerId === id);
+
+  // Initialize youtube URL state when player loads
+  useEffect(() => {
+    if (!isEditingYoutube && youtubeUrl === '' && player?.youtubePlaylistUrl) {
+      setYoutubeUrl(player.youtubePlaylistUrl);
+    }
+  }, [player?.youtubePlaylistUrl, isEditingYoutube, youtubeUrl]);
 
   if (isLoading) {
     return (
@@ -134,12 +142,6 @@ export default function PlayerDetail() {
     }
   };
 
-  // Initialize youtube URL state when player loads
-  useEffect(() => {
-    if (!isEditingYoutube && youtubeUrl === '' && player.youtubePlaylistUrl) {
-      setYoutubeUrl(player.youtubePlaylistUrl);
-    }
-  }, [player.youtubePlaylistUrl, isEditingYoutube, youtubeUrl]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -275,6 +277,12 @@ export default function PlayerDetail() {
           </div>
         )}
 
+        {/* Saved Videos */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Saved Videos</h3>
+          <PlayerVideos playerId={player.id} />
+        </div>
+
         {/* YouTube Playlist */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">YouTube Playlist</h3>
@@ -294,7 +302,7 @@ export default function PlayerDetail() {
               {player.youtubePlaylistUrl ? (
                 <a href={player.youtubePlaylistUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
                   <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
-                    <Youtube className="w-4 h-4 text-red-500" />
+                    <Youtube className="w-4 h-4 text-destructive" />
                     View Playlist
                   </Button>
                 </a>
