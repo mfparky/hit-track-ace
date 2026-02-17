@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useOutings } from '@/hooks/useOutings';
+import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { PlayerCard } from '@/components/hitting/PlayerCard';
@@ -16,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function Roster() {
   const { outings } = useOutings();
   const { players, isLoading, addPlayer, isAddingPlayer } = usePlayers();
+  const { isCoach } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
@@ -72,6 +74,7 @@ export default function Roster() {
         title="Roster"
         subtitle={isLoading ? 'Loading...' : `${players.length} players`}
         action={
+          isCoach ? (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="icon" variant="ghost" className="text-accent">
@@ -134,6 +137,7 @@ export default function Roster() {
               </div>
             </DialogContent>
           </Dialog>
+          ) : null
         }
       />
 

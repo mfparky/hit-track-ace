@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayers } from '@/hooks/usePlayers';
 import { useOutings } from '@/hooks/useOutings';
+import { useAuth } from '@/hooks/useAuth';
 import { PageHeader } from '@/components/hitting/PageHeader';
 import { BottomNav } from '@/components/hitting/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,16 @@ export default function NewOuting() {
   const navigate = useNavigate();
   const { addOuting } = useOutings();
   const { players, isLoading } = usePlayers();
+  const { isCoach, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && !isCoach) {
+      toast({ title: 'Sign in required', description: 'You need to sign in as a coach to create outings.', variant: 'destructive' });
+      navigate('/coach-login');
+    }
+  }, [authLoading, isCoach]);
+
   const [step, setStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [outingData, setOutingData] = useState({

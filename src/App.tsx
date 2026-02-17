@@ -14,6 +14,8 @@ import LogOuting from "./pages/LogOuting";
 import OutingDetail from "./pages/OutingDetail";
 import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
+import CoachLogin from "./pages/CoachLogin";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/outing/:id" element={<OutingDetail />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/coach-login" element={<CoachLogin />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
