@@ -18,6 +18,7 @@ import { SprayChartPoint, Pitch } from '@/types/hitting';
 import { calcAvgExitVelo, calcBarrelPct, calcOutingTrends, calcPlateDiscipline } from '@/lib/stats';
 import { calcReportCard } from '@/lib/grades';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import {
@@ -38,6 +39,7 @@ export default function PlayerDetail() {
   const { outings } = useOutings();
   const { players, isLoading, deletePlayer, updatePlayer } = usePlayers();
   const { toast } = useToast();
+  const { isCoach } = useAuth();
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [isEditingYoutube, setIsEditingYoutube] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -150,6 +152,7 @@ export default function PlayerDetail() {
         subtitle={`#${player.number} • Bats ${player.bats === 'S' ? 'Switch' : player.bats}`}
         showBack
         action={
+          isCoach ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="icon" variant="ghost" className="text-destructive">
@@ -171,6 +174,7 @@ export default function PlayerDetail() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          ) : null
         }
       />
 
@@ -280,7 +284,7 @@ export default function PlayerDetail() {
         {/* Saved Videos */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Saved Videos</h3>
-          <PlayerVideos playerId={player.id} />
+          <PlayerVideos playerId={player.id} isCoach={isCoach} />
         </div>
 
         {/* YouTube Playlist */}
@@ -309,9 +313,11 @@ export default function PlayerDetail() {
               ) : (
                 <span className="text-sm text-muted-foreground flex-1">No playlist linked</span>
               )}
-              <Button size="sm" variant="ghost" onClick={() => { setYoutubeUrl(player.youtubePlaylistUrl || ''); setIsEditingYoutube(true); }}>
-                <Link className="w-4 h-4" />
-              </Button>
+              {isCoach && (
+                <Button size="sm" variant="ghost" onClick={() => { setYoutubeUrl(player.youtubePlaylistUrl || ''); setIsEditingYoutube(true); }}>
+                  <Link className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           )}
         </div>

@@ -12,11 +12,12 @@ interface VideoItem {
 
 interface PlayerVideosProps {
   playerId: string;
+  isCoach?: boolean;
 }
 
 const BUCKET = 'swing-videos';
 
-export function PlayerVideos({ playerId }: PlayerVideosProps) {
+export function PlayerVideos({ playerId, isCoach }: PlayerVideosProps) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingName, setDeletingName] = useState<string | null>(null);
@@ -101,19 +102,21 @@ export function PlayerVideos({ playerId }: PlayerVideosProps) {
             <span className="text-xs text-muted-foreground truncate">
               {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : v.name}
             </span>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 text-destructive"
-              disabled={deletingName === v.name}
-              onClick={() => handleDelete(v.name)}
-            >
-              {deletingName === v.name ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="w-3.5 h-3.5" />
-              )}
-            </Button>
+            {isCoach && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 text-destructive"
+                disabled={deletingName === v.name}
+                onClick={() => handleDelete(v.name)}
+              >
+                {deletingName === v.name ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
       ))}
